@@ -4,6 +4,9 @@ import os
 import sys
 from typing import Any
 
+# Ensure workspace root is in sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../")))
+
 from src.Application.UseCases.extract_layout_specification import (
     ExtractLayoutSpecificationUseCase,
 )
