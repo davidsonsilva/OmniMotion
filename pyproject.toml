@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omnimotion"
+version = "0.1.0"
+description = "Mecanismo agnóstico de engenharia reversa de movimento"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pytest",
+    "pydantic",
+    "crewai",
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+pythonpath = ["."]

@@ -1,0 +1,6 @@
+{
+  "name": "OmniMotion",
+  "description": "Agnostic motion reverse-engineering engine built with Clean Architecture, SOLID, and TDD.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
