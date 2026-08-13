@@ -72,6 +72,52 @@ class CrewAIVideoAnalyzer(IVideoAnalyzer):
         self.llm = llm
         self.output_schema = MotionTimelineSchema
 
+    def _build_crew(self, video_path: str) -> Any:
+        """
+        Private method to instantiate CrewAI agents, tasks, and the Crew object.
+        Configures Agent 1 (Vision Agent) and Agent 2 (Data Structuralist),
+        setting output_pydantic=MotionTimelineSchema on the synthesis task.
+        """
+        from crewai import Agent, Task, Crew, Process
+
+        vision_spec = self.agent_pack.vision_agent
+        structuralist_spec = self.agent_pack.data_structuralist
+
+        agent_vision = Agent(
+            role=vision_spec.role,
+            goal=vision_spec.goal,
+            backstory=vision_spec.backstory,
+            verbose=True,
+            llm=self.llm,
+        )
+
+        agent_structuralist = Agent(
+            role=structuralist_spec.role,
+            goal=structuralist_spec.goal,
+            backstory=structuralist_spec.backstory,
+            verbose=True,
+            llm=self.llm,
+        )
+
+        task_analysis = Task(
+            description=f"Analisar o vídeo no caminho '{video_path}' extraindo dinâmica de movimento, camadas e keyframes.",
+            expected_output="Coordenadas espaciais detalhadas, curva Bézier e eventos de linha do tempo de movimento.",
+            agent=agent_vision,
+        )
+
+        task_synthesis = Task(
+            description="Sintetizar os dados de visão brutos em uma estrutura JSON validada conforme a entidade MotionTimeline.",
+            expected_output="Estrutura JSON validada do MotionTimeline.",
+            agent=agent_structuralist,
+            output_pydantic=self.output_schema,
+        )
+
+        return Crew(
+            agents=[agent_vision, agent_structuralist],
+            tasks=[task_analysis, task_synthesis],
+            process=Process.sequential,
+        )
+
     def analyze(self, video_path: str) -> dict[str, Any]:
         """
         Analyzes a video file at video_path and returns a dictionary representation
@@ -83,53 +129,14 @@ class CrewAIVideoAnalyzer(IVideoAnalyzer):
         if not os.path.exists(video_path):
             raise FileNotFoundError("Video file not found")
 
-        vision_agent_spec = self.agent_pack.vision_agent
-        data_structuralist_spec = self.agent_pack.data_structuralist
-
         try:
-            from crewai import Agent, Task, Crew, Process
-
-            agent_vision = Agent(
-                role=vision_agent_spec.role,
-                goal=vision_agent_spec.goal,
-                backstory=vision_agent_spec.backstory,
-                verbose=True,
-                llm=self.llm,
-            )
-
-            agent_structuralist = Agent(
-                role=data_structuralist_spec.role,
-                goal=data_structuralist_spec.goal,
-                backstory=data_structuralist_spec.backstory,
-                verbose=True,
-                llm=self.llm,
-            )
-
-            task_analysis = Task(
-                description=f"Analyze motion dynamics, layout bounding boxes, and webcam overlays for video: '{video_path}'.",
-                expected_output="Detailed spatial coordinates and motion timeline keyframe events.",
-                agent=agent_vision,
-            )
-
-            task_synthesis = Task(
-                description="Synthesize extracted vision data into a validated JSON output following the MotionTimeline schema.",
-                expected_output="Validated MotionTimeline JSON structure.",
-                agent=agent_structuralist,
-                output_pydantic=self.output_schema,
-            )
-
-            crew = Crew(
-                agents=[agent_vision, agent_structuralist],
-                tasks=[task_analysis, task_synthesis],
-                process=Process.sequential,
-            )
-
-            result = crew.kickoff()
-
-            if hasattr(result, "pydantic") and result.pydantic:
-                return result.pydantic.model_dump()
-            elif hasattr(result, "to_dict"):
-                return result.to_dict()
+            crew = self._build_crew(video_path)
+            if crew:
+                result = crew.kickoff()
+                if hasattr(result, "pydantic") and result.pydantic:
+                    return result.pydantic.model_dump()
+                elif hasattr(result, "to_dict"):
+                    return result.to_dict()
         except Exception:
             # Fallback when CrewAI runtime is not initialized or mocked
             pass

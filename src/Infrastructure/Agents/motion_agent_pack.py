@@ -21,18 +21,18 @@ class MotionAgentPack:
     vision_agent: AgentRole = field(
         default_factory=lambda: AgentRole(
             name="Vision Agent",
-            role="Computer Vision & Motion Frame Analyst",
-            goal="Extract frame layout, spatial coordinates, webcam overlays, and animation keyframes from video input.",
-            backstory="Expert computer vision specialist trained on video frame analysis, optical flow, and bounding box detection.",
+            role="Analista Sênior de Motion Design e Visão Computacional",
+            goal="Analisar os frames do vídeo fornecido e extrair com precisão matemática a física, a estrutura de camadas e a linha do tempo do movimento.",
+            backstory="Você é um engenheiro especialista em engenharia reversa visual. Sua habilidade é analisar vídeos de interfaces digitais e rastrear elementos. Você deve identificar camadas sobrepostas (como overlays de webcam/Picture-in-Picture), capturar cantos arredondados (border-radius), opacidade, e mapear os tempos exatos em milissegundos de cada animação, estimando as curvas Bézier (Ease-in, Ease-out, etc.).",
         )
     )
 
     data_structuralist: AgentRole = field(
         default_factory=lambda: AgentRole(
             name="Data Structuralist",
-            role="Motion Timeline Synthesizer",
-            goal="Convert raw visual metadata into mathematical Domain MotionTimeline Aggregate Roots and Bézier curves.",
-            backstory="Mathematical modeling specialist ensuring clean data representations, accurate timing in milliseconds, and zero domain leakage.",
+            role="Arquiteto de Design System e Engenheiro de Dados",
+            goal="Traduzir a análise bruta de movimento do Vision Agent em um esquema estruturado Pydantic que alimentará a nossa entidade 'MotionTimeline'.",
+            backstory="Você é obcecado por padronização e tokens de design. Sua tarefa é pegar os metadados brutos gerados pelo especialista de movimento e envelopá-los estritamente nas classes Pydantic que representam nossas entidades do Domain (MediaLayer, Dimensions, MotionTimeline), ignorando qualquer ruído visual e gerando o JSON final perfeitamente limpo.",
         )
     )
 

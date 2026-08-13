@@ -58,11 +58,34 @@ def test_analyze_video_returns_domain_motion_timeline_aggregate(tmp_path):
 
 
 def test_crewai_agent_pack_roles_configured():
-    """Verify Vision Agent and Data Structuralist roles are configured in CrewAI analyzer."""
+    """Verify Vision Agent and Data Structuralist roles are configured with specialized prompts."""
     analyzer = CrewAIVideoAnalyzer()
     pack = analyzer.agent_pack
 
     assert pack.vision_agent.name == "Vision Agent"
-    assert "Computer Vision" in pack.vision_agent.role
+    assert pack.vision_agent.role == "Analista Sênior de Motion Design e Visão Computacional"
+    assert "extrair com precisão matemática" in pack.vision_agent.goal
+    assert "engenharia reversa visual" in pack.vision_agent.backstory
+
     assert pack.data_structuralist.name == "Data Structuralist"
-    assert "Timeline Synthesizer" in pack.data_structuralist.role
+    assert pack.data_structuralist.role == "Arquiteto de Design System e Engenheiro de Dados"
+    assert "esquema estruturado Pydantic" in pack.data_structuralist.goal
+    assert "obcecado por padronização" in pack.data_structuralist.backstory
+
+
+def test_build_crew_creates_or_handles_crew(tmp_path):
+    """Verify that _build_crew configures agents and tasks with output_pydantic validation."""
+    fake_video = tmp_path / "sample_video.mp4"
+    fake_video.write_bytes(b"dummy video content")
+
+    analyzer = CrewAIVideoAnalyzer()
+    try:
+        crew = analyzer._build_crew(str(fake_video))
+        assert crew is not None
+        assert len(crew.agents) == 2
+        assert len(crew.tasks) == 2
+        assert crew.tasks[1].output_pydantic == analyzer.output_schema
+    except ImportError:
+        # CrewAI is not installed in standard runtime environment
+        pass
+
